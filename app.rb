@@ -10,7 +10,6 @@ end
 
 get ("/results") do
   @catalogue = params.fetch("catno").to_s.chomp
-  erb(:results)
 
   discogs_key = ENV.fetch("DISCOGS_KEY")
   discogs_secret = ENV.fetch("DISCOGS_SECRET")
@@ -22,6 +21,13 @@ get ("/results") do
   results_array = parsed_discogs_data.fetch("results")
   first_result_hash = results_array.at(0)
 
-  title = first_result_hash.fetch("title")
+  @title = first_result_hash.fetch("title")
+  @album_cover_url = first_result_hash.fetch("cover_image")
+
+
+
+
+
+  erb(:results)
 
 end
