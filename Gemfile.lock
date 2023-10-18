@@ -6,6 +6,9 @@ GEM
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
+    adamantium (0.2.0)
+      ice_nine (~> 0.11.0)
+      memoizable (~> 0.4.0)
     addressable (2.8.4)
       public_suffix (>= 2.0.2, < 6.0)
     appdev_support (0.2.1)
@@ -38,6 +41,7 @@ GEM
       capybara
       color_namer
       rspec
+    equalizer (0.0.11)
     erubi (1.12.0)
     faraday (2.7.9)
       faraday-net_http (>= 2.0, < 3.1)
@@ -51,9 +55,16 @@ GEM
       oj (~> 3.13.12)
       rake (~> 13)
     hashdiff (1.0.1)
+    html (0.1.2)
+      adamantium (~> 0.2.0)
+      equalizer (~> 0.0.9)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
+    ice_nine (0.11.2)
+    json (2.6.3)
     matrix (0.4.2)
+    memoizable (0.4.2)
+      thread_safe (~> 0.3, >= 0.3.1)
     method_source (1.0.0)
     mini_mime (1.1.2)
     minitest (5.18.0)
@@ -126,6 +137,7 @@ GEM
     tabulo (2.8.2)
       tty-screen (= 0.8.1)
       unicode-display_width (~> 2.2)
+    thread_safe (0.3.6)
     tilt (2.1.0)
     tty-screen (0.8.1)
     tzinfo (2.0.6)
@@ -154,7 +166,9 @@ DEPENDENCIES
   capybara
   draft_matchers
   grade_runner
+  html
   i18n
+  json
   pry
   puma (~> 5.0)
   rspec
