@@ -1,0 +1,15 @@
+<h1>multiple</h1>
+<h2><%= @title %></h2>
+<img src="<%= @album_cover_url %>" alt="Album cover" width="300" height="300">
+
+<ul>
+  <% @years.sort.uniq.each do |item| %>
+    <li><%= item %></li>
+  <% end %>
+</ul>
+
+<ul>
+  <% @countries.sort.uniq.each do |item| %>
+    <li><%= item %></li>
+  <% end %>
+</ul>
