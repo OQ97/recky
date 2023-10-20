@@ -1,0 +1,16 @@
+<div>
+<h2><%= @title %></h2>
+<img src="<%= @album_cover_url%>" lead="Album cover for <%= @title %>" height="250">
+</div>
+
+<div>
+<h3>Condition</h3>
+<p>Mint: $<%= sprintf("%.2f", @mint).to_f %></p>
+<p>Near Mint: $<%= sprintf("%.2f", @near_mint).to_f %></p>
+<p>Very Good Plus: $<%= sprintf("%.2f", @Very_good_plus).to_f %></p>
+<p>Very Good: $<%= sprintf("%.2f", @Very_good).to_f %></p>
+<p>Good plus: $<%= sprintf("%.2f", @good_plus).to_f %></p>
+<p>Good: $<%= sprintf("%.2f", @good).to_f %></p>
+<p>Fair: $<%= sprintf("%.2f", @fair).to_f %></p>
+<p>Poor: $<%= sprintf("%.2f", @poor).to_f %></p>
+</div>
