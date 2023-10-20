@@ -1,13 +1,13 @@
 #search function
-get("/catalogue_search") do
+get("/:catalogue_search") do
 
   #getting catalogue number from form in homepage
-  $catno = params.fetch("catno").to_s.chomp
+  @catno = params.fetch("catno").to_s.chomp
 
   #getting data from Discogs API
-  $discogs_key = ENV.fetch("DISCOGS_KEY")
-  $discogs_secret = ENV.fetch("DISCOGS_SECRET")
-  @discogs_url = "https://api.discogs.com/database/search?type=release&format=vinyl&catno=#{$catno}&key=#{$discogs_key}&secret=#{$discogs_secret}"
+  @discogs_key = ENV.fetch("DISCOGS_KEY")
+  @discogs_secret = ENV.fetch("DISCOGS_SECRET")
+  @discogs_url = "https://api.discogs.com/database/search?type=release&format=vinyl&catno=#{@catno}&key=#{@discogs_key}&secret=#{@discogs_secret}"
   raw_discogs_data = HTTP.get(@discogs_url)
   parsed_discogs_data = JSON.parse(raw_discogs_data)
   results_array = parsed_discogs_data.fetch("results")
@@ -46,4 +46,11 @@ get("/catalogue_search") do
   @presses_countries_num = @countries.uniq.count
 
   erb(:catalogue_search)
+
+  if @presses_years_num > 1
+    load "multiple_years.rb"
+    redirect "/multiple_years"
+  else
+  end
+
 end
