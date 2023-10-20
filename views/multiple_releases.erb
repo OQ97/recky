@@ -3,8 +3,13 @@
 <img src="<%= @album_cover_url%>" lead="Album cover for <%= @title %>" height="250">
 </div>
 
+<div>
+    <form action="/">
     <select>
         <% @sorted_combinations.each do |item| %>
             <option><%= item %></option>
         <% end %>
     </select>
+    <Button>Search</Button>
+    </form>
+</div>

@@ -78,6 +78,7 @@ get("/:catalogue_search") do
       first_comparison.zero? ? a[8] <=> b[8] : first_comparison
     end 
     erb(:multiple_releases)
+
   else
     @prices_discogs_url = "https://api.discogs.com/marketplace/price_suggestions/#{@id}?&token=#{@discogs_token}"
     raw_discogs_price_data = HTTP.get(@prices_discogs_url)
@@ -92,5 +93,4 @@ get("/:catalogue_search") do
     @poor = @parsed_discogs_price_data.fetch("Poor (P)").fetch("value")
     erb(:single_release)
   end
-
 end
