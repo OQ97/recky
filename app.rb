@@ -12,22 +12,22 @@ end
 get("/:catalogue_search") do
 
   #getting catalogue number from form in homepage
-  @catno = params.fetch("catno").to_s.chomp
+  $catno = params.fetch("catno").to_s.chomp
 
   #getting data from Discogs API
-  @discogs_key = ENV.fetch("DISCOGS_KEY")
-  @discogs_secret = ENV.fetch("DISCOGS_SECRET")
-  @discogs_token = ENV.fetch("DISCOGS_TOKEN")
-  @discogs_url = "https://api.discogs.com/database/search?type=release&format=vinyl&catno=#{@catno}&key=#{@discogs_key}&secret=#{@discogs_secret}"
+  $discogs_key = ENV.fetch("DISCOGS_KEY")
+  $discogs_secret = ENV.fetch("DISCOGS_SECRET")
+  $discogs_token = ENV.fetch("DISCOGS_TOKEN")
+  @discogs_url = "https://api.discogs.com/database/search?type=release&format=vinyl&catno=#{$catno}&key=#{$discogs_key}&secret=#{$discogs_secret}"
   raw_discogs_data = HTTP.get(@discogs_url)
   parsed_discogs_data = JSON.parse(raw_discogs_data)
-  results_array = parsed_discogs_data.fetch("results")
-  first_result_hash = results_array.at(0)
+  $results_array = parsed_discogs_data.fetch("results")
+  first_result_hash = $results_array.at(0)
   pagination_hash = parsed_discogs_data.fetch("pagination")
 
   #basic info about release
-  @title = first_result_hash.fetch("title")
-  @album_cover_url = first_result_hash.fetch("cover_image")
+  $title = first_result_hash.fetch("title")
+  $album_cover_url = first_result_hash.fetch("cover_image")
   @id = first_result_hash.fetch("id")
 
   #number of pressings
@@ -36,7 +36,7 @@ get("/:catalogue_search") do
   #years in which the record has been pressed
   @years=[]
   year = 0
-  results_array.each do |array_num|
+  $results_array.each do |array_num|
     begin 
     year = array_num.fetch("year").to_i
     @years.push(year)
@@ -48,7 +48,7 @@ get("/:catalogue_search") do
   #countries in which the record has been pressed
   country = 0
   @countries=[]
-  results_array.each do |array_num|
+  $results_array.each do |array_num|
     begin
     country = array_num.fetch("country").to_s
     @countries.push(country)
@@ -61,7 +61,7 @@ get("/:catalogue_search") do
     combination = ""
     separator = " | "
     combinations = []
-    results_array.each do |to_combine|
+    $results_array.each do |to_combine|
       begin 
         if to_combine.fetch("formats").at(0).key?("text")
         combination = to_combine.fetch("year").to_s+separator+to_combine.fetch("country").to_s+separator+to_combine.fetch("formats").at(0).fetch("text").to_s
@@ -80,7 +80,7 @@ get("/:catalogue_search") do
     erb(:multiple_releases)
 
   else
-    @prices_discogs_url = "https://api.discogs.com/marketplace/price_suggestions/#{@id}?&token=#{@discogs_token}"
+    @prices_discogs_url = "https://api.discogs.com/marketplace/price_suggestions/#{@id}?&token=#{$discogs_token}"
     raw_discogs_price_data = HTTP.get(@prices_discogs_url)
     @parsed_discogs_price_data = JSON.parse(raw_discogs_price_data)
     @mint = @parsed_discogs_price_data.fetch("Mint (M)").fetch("value")
@@ -93,4 +93,41 @@ get("/:catalogue_search") do
     @poor = @parsed_discogs_price_data.fetch("Poor (P)").fetch("value")
     erb(:single_release)
   end
+end
+
+get("/:catalogue_search/:detailed_search") do
+  release_details = params.fetch("release_details").to_s
+  separated_release_details = release_details.split(" | ")
+  
+  
+  if separated_release_details[2].nil?
+    @detail_year = separated_release_details[0].strip
+    @detail_country = separated_release_details[1].strip
+    @detailed_selection = $results_array.find do |hash|
+      hash["year"] == @detail_year &&
+      hash["country"] == @detail_country
+    end 
+  else 
+    @detail_year = separated_release_details[0].strip
+    @detail_country = separated_release_details[1].strip
+    @detail_text = separated_release_details[2].strip
+    @detailed_selection = $results_array.find do |hash|
+      hash["year"] == @detail_year &&
+      hash["country"] == @detail_country &&
+      hash["formats"].any? { |format| format["text"] == @detail_text }
+    end 
+  end 
+  @detailed_id = @detailed_selection.fetch("id").to_s
+  @detailed_prices_discogs_url = "https://api.discogs.com/marketplace/price_suggestions/#{@detailed_id}?&token=#{$discogs_token}"
+  detailed_raw_discogs_price_data = HTTP.get(@detailed_prices_discogs_url)
+  @detailed_parsed_discogs_price_data = JSON.parse(detailed_raw_discogs_price_data)
+  @mint = @detailed_parsed_discogs_price_data.fetch("Mint (M)").fetch("value")
+  @near_mint = @detailed_parsed_discogs_price_data.fetch("Near Mint (NM or M-)").fetch("value")
+  @Very_good_plus = @detailed_parsed_discogs_price_data.fetch("Very Good Plus (VG+)").fetch("value")
+  @Very_good = @detailed_parsed_discogs_price_data.fetch("Very Good (VG)").fetch("value")
+  @good_plus = @detailed_parsed_discogs_price_data.fetch("Good Plus (G+)").fetch("value")
+  @good = @detailed_parsed_discogs_price_data.fetch("Good (G)").fetch("value")
+  @fair = @detailed_parsed_discogs_price_data.fetch("Fair (F)").fetch("value")
+  @poor = @detailed_parsed_discogs_price_data.fetch("Poor (P)").fetch("value")
+  erb(:detailed_search)
 end

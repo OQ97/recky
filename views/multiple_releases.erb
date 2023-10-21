@@ -1,15 +1,15 @@
 <div>
-<h2><%= @title %></h2>
-<img src="<%= @album_cover_url%>" lead="Album cover for <%= @title %>" height="250">
+<h2><%= $title %></h2>
+<img src="<%= $album_cover_url%>" lead="Album cover for <%= $title %>" height="250">
 </div>
 
 <div>
-    <form action="/">
-    <select>
+    <form action="/:catalogue_search/:detailed_search" method="get">
+    <select name="release_details">
         <% @sorted_combinations.each do |item| %>
             <option><%= item %></option>
         <% end %>
     </select>
-    <Button>Search</Button>
+    <Button type="submit">Search</Button>
     </form>
 </div>
