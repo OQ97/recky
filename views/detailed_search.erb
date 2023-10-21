@@ -1,22 +1,13 @@
 <div>
 <h2><%= $title %></h2>
 <img src="<%= $album_cover_url%>" lead="Album cover for <%= $title %>" height="250">
-</div>
-
-<div>
-<h2><%= @detail_year%></h2>
-<h2><%= @detail_country%></h2>
-<h2><%= @detail_text%></h2>
+<h3>Pressing: <%= @release_details %></h3>
 </div>
 
 <div>
 <h3>Condition</h3>
-<p>Mint: $<%= sprintf("%.2f", @mint).to_f %></p>
-<p>Near Mint: $<%= sprintf("%.2f", @near_mint).to_f %></p>
-<p>Very Good Plus: $<%= sprintf("%.2f", @Very_good_plus).to_f %></p>
-<p>Very Good: $<%= sprintf("%.2f", @Very_good).to_f %></p>
-<p>Good plus: $<%= sprintf("%.2f", @good_plus).to_f %></p>
-<p>Good: $<%= sprintf("%.2f", @good).to_f %></p>
-<p>Fair: $<%= sprintf("%.2f", @fair).to_f %></p>
-<p>Poor: $<%= sprintf("%.2f", @poor).to_f %></p>
+<p><strong>New / Like new:</strong> $<%= sprintf("%.2f", @new).to_f %></p>
+<p><strong>Used - Good / Excellent: </strong>$<%= sprintf("%.2f", @used_excellent).to_f %></p>
+<p><strong>Used - Poor working conditiong: </strong>$<%= sprintf("%.2f", @used_working).to_f %></p>
+<p><strong>Used - Non-working: $</strong><%= sprintf("%.2f", @used_poor).to_f %></p>
 </div>

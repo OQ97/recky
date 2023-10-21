@@ -9,9 +9,10 @@ get("/") do
   erb(:homepage)
 end
 
+#initial search function
 get("/:catalogue_search") do
 
-  #getting catalogue number from form in homepage
+  #getting catalogue number from text form in homepage
   $catno = params.fetch("catno").to_s.chomp
 
   #getting data from Discogs API
@@ -25,15 +26,20 @@ get("/:catalogue_search") do
   first_result_hash = $results_array.at(0)
   pagination_hash = parsed_discogs_data.fetch("pagination")
 
-  #basic info about release
+  #checking if release exists
+  if first_result_hash.nil?
+    erb(:not_found)
+  else 
+  
+  #getting basic info about release
   $title = first_result_hash.fetch("title")
   $album_cover_url = first_result_hash.fetch("cover_image")
   @id = first_result_hash.fetch("id")
 
-  #number of pressings
+  #calculating number of pressings
   @num_pressings = pagination_hash.fetch("items").to_i
   
-  #years in which the record has been pressed
+  #calculating # of years in which the record has been pressed
   @years=[]
   year = 0
   $results_array.each do |array_num|
@@ -45,7 +51,7 @@ get("/:catalogue_search") do
   end 
   @presses_years_num = @years.uniq.count
 
-  #countries in which the record has been pressed
+  #calcualting # of countries in which the record has been pressed
   country = 0
   @countries=[]
   $results_array.each do |array_num|
@@ -57,12 +63,16 @@ get("/:catalogue_search") do
   end 
   @presses_countries_num = @countries.uniq.count
 
+  #redirectioning based on whether there are multiple pressings for a given catalogue number
   if @num_pressings > 1
+
+    #MULTIPLE RELEASE SIDE - Getting all year-country-text combinations
     combination = ""
     separator = " | "
     combinations = []
     $results_array.each do |to_combine|
       begin 
+        #checks if there is a special text in the release (e.g., disc color, signed...)
         if to_combine.fetch("formats").at(0).key?("text")
         combination = to_combine.fetch("year").to_s+separator+to_combine.fetch("country").to_s+separator+to_combine.fetch("formats").at(0).fetch("text").to_s
         combinations.push(combination)
@@ -80,9 +90,12 @@ get("/:catalogue_search") do
     erb(:multiple_releases)
 
   else
+    #SINGLE-RELEASE SIDE - getting prices from API
     @prices_discogs_url = "https://api.discogs.com/marketplace/price_suggestions/#{@id}?&token=#{$discogs_token}"
     raw_discogs_price_data = HTTP.get(@prices_discogs_url)
     @parsed_discogs_price_data = JSON.parse(raw_discogs_price_data)
+
+    #getting prices for different conditions
     @mint = @parsed_discogs_price_data.fetch("Mint (M)").fetch("value")
     @near_mint = @parsed_discogs_price_data.fetch("Near Mint (NM or M-)").fetch("value")
     @Very_good_plus = @parsed_discogs_price_data.fetch("Very Good Plus (VG+)").fetch("value")
@@ -91,15 +104,24 @@ get("/:catalogue_search") do
     @good = @parsed_discogs_price_data.fetch("Good (G)").fetch("value")
     @fair = @parsed_discogs_price_data.fetch("Fair (F)").fetch("value")
     @poor = @parsed_discogs_price_data.fetch("Poor (P)").fetch("value")
+    
+    #calculating new prices
+    @new = (@mint+@near_mint)/2
+    @used_excellent = (@Very_good_plus+@Very_good)/2
+    @used_working = (@good_plus+@good)/2
+    @used_poor = (@fair+@poor)/2
+
     erb(:single_release)
   end
 end
+end
 
 get("/:catalogue_search/:detailed_search") do
-  release_details = params.fetch("release_details").to_s
-  separated_release_details = release_details.split(" | ")
+  #getting release details provided by user
+  @release_details = params.fetch("release_details").to_s
+  separated_release_details = @release_details.split(" | ")
   
-  
+  #checks if there is special text in the selection, then separates year, country, and special release from selection
   if separated_release_details[2].nil?
     @detail_year = separated_release_details[0].strip
     @detail_country = separated_release_details[1].strip
@@ -117,10 +139,14 @@ get("/:catalogue_search/:detailed_search") do
       hash["formats"].any? { |format| format["text"] == @detail_text }
     end 
   end 
+
+  #getting prices from discogs API
   @detailed_id = @detailed_selection.fetch("id").to_s
   @detailed_prices_discogs_url = "https://api.discogs.com/marketplace/price_suggestions/#{@detailed_id}?&token=#{$discogs_token}"
   detailed_raw_discogs_price_data = HTTP.get(@detailed_prices_discogs_url)
   @detailed_parsed_discogs_price_data = JSON.parse(detailed_raw_discogs_price_data)
+  
+  #determining prices based on condition
   @mint = @detailed_parsed_discogs_price_data.fetch("Mint (M)").fetch("value")
   @near_mint = @detailed_parsed_discogs_price_data.fetch("Near Mint (NM or M-)").fetch("value")
   @Very_good_plus = @detailed_parsed_discogs_price_data.fetch("Very Good Plus (VG+)").fetch("value")
@@ -129,5 +155,12 @@ get("/:catalogue_search/:detailed_search") do
   @good = @detailed_parsed_discogs_price_data.fetch("Good (G)").fetch("value")
   @fair = @detailed_parsed_discogs_price_data.fetch("Fair (F)").fetch("value")
   @poor = @detailed_parsed_discogs_price_data.fetch("Poor (P)").fetch("value")
+
+  #calculating new prices
+  @new = (@mint+@near_mint)/2
+  @used_excellent = (@Very_good_plus+@Very_good)/2
+  @used_working = (@good_plus+@good)/2
+  @used_poor = (@fair+@poor)/2
+  
   erb(:detailed_search)
 end
