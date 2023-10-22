@@ -66,6 +66,20 @@ get("/:catalogue_search") do
   #redirectioning based on whether there are multiple pressings for a given catalogue number
   if @num_pressings > 1
 
+    #See if there are multiple releases under the same catalogue number
+    @title_catno=[]
+    title_per_cat = ""
+    $results_array.each do |item|
+      begin 
+      title_per_cat = item.fetch("title").to_s
+      @title_catno.push(title_per_cat)
+      rescue StandardError
+      end 
+    end
+    @all_titles = @title_catno.map do |item|
+      item.strip.downcase
+    end  
+
     #MULTIPLE RELEASE SIDE - Getting all year-country-text combinations
     combination = ""
     separator = " | "

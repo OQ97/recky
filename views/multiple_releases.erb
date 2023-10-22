@@ -1,3 +1,5 @@
+<title>Recky | Results</title>
+
 <div>
 <h2><%= $title %></h2>
 <img src="<%= $album_cover_url%>" lead="Album cover for <%= $title %>" height="250">
@@ -12,4 +14,17 @@
     </select>
     <Button type="submit">Search</Button>
     </form>
+</div>
+
+<div>
+<% if @all_titles.uniq.size >1%>
+    <ul>
+        <% @title_catno.sort.uniq.each do |item| %>
+            <% result_image_hash = $results_array.find { |hash| hash["title"] == item }%>
+            <% result_image = result_image_hash ? result_image_hash["cover_image"] : nil %>
+            <li><%= item %></li>
+            <img src="<%= result_image %>" alt="Result image" height="100">
+        <% end %>
+    </ul>
+    <% end %>
 </div>
