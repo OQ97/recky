@@ -10,7 +10,7 @@ get("/") do
 end
 
 #initial search function
-get("/:catalogue_search") do
+get("/catalogue_search") do
 
   #getting catalogue number from text form in homepage
   $catno = params.fetch("catno").to_s.chomp
@@ -66,7 +66,7 @@ get("/:catalogue_search") do
   #redirectioning based on whether there are multiple pressings for a given catalogue number
   if @num_pressings > 1
 
-    #See if there are multiple releases under the same catalogue number
+    #MULTIPLE RELEASE SIDE - See if there are multiple releases under the same catalogue number
     @title_catno=[]
     title_per_cat = ""
     $results_array.each do |item|
@@ -78,9 +78,10 @@ get("/:catalogue_search") do
     end
     @all_titles = @title_catno.map do |item|
       item.strip.downcase
-    end  
+    end
+    
 
-    #MULTIPLE RELEASE SIDE - Getting all year-country-text combinations
+    #Getting all year-country-text combinations
     combination = ""
     separator = " | "
     combinations = []
@@ -91,16 +92,31 @@ get("/:catalogue_search") do
         combination = to_combine.fetch("year").to_s+separator+to_combine.fetch("country").to_s+separator+to_combine.fetch("formats").at(0).fetch("text").to_s
         combinations.push(combination)
         else 
-        combination = to_combine.fetch("year").to_s+separator+to_combine.fetch("country").to_s
+        combination = to_combine.fetch("year").to_s+separator+to_combine.fetch("country").to_s+" | Standard Edition"
         combinations.push(combination)
         end
       rescue StandardError
       end 
     end
-    @sorted_combinations = combinations.sort do |a, b|
+    
+    $sorted_combinations = combinations.sort do |a, b|
       first_comparison = a[0, 4].to_i <=> b[0, 4].to_i
       first_comparison.zero? ? a[8] <=> b[8] : first_comparison
     end 
+
+    #Experimental: Three drop downs
+    $combination_hash = []
+
+    $sorted_combinations.each do |item|
+      parts = item.split(" | ")
+      temporary_hash = {
+        "Year" => parts[0],
+        "Country" => parts[1],
+        "Text" => parts[2]
+      }
+      $combination_hash.push(temporary_hash)
+    end 
+
     erb(:multiple_releases)
 
   else
@@ -130,13 +146,13 @@ get("/:catalogue_search") do
 end
 end
 
-get("/:catalogue_search/:detailed_search") do
+get("/catalogue_search/detailed_search") do
   #getting release details provided by user
   @release_details = params.fetch("release_details").to_s
   separated_release_details = @release_details.split(" | ")
   
   #checks if there is special text in the selection, then separates year, country, and special release from selection
-  if separated_release_details[2].nil?
+  if separated_release_details[3] = "Standard Edition"
     @detail_year = separated_release_details[0].strip
     @detail_country = separated_release_details[1].strip
     @detailed_selection = $results_array.find do |hash|
@@ -177,4 +193,21 @@ get("/:catalogue_search/:detailed_search") do
   @used_poor = (@fair+@poor)/2
   
   erb(:detailed_search)
+end
+
+post '/drop_submit' do
+  $selected_drop_year = params["drop_year"]
+  $selected_drop_country = params["drop_country"]
+end
+
+post "/drop_country" do
+  $selected_drop_year = params["drop_year"].to_s
+  $selected_drop_country = $sorted_combinations.select { |line| line.split(" | ")[0] == $selected_drop_year }
+                          .map { |line| line.split(" | ")[1] }.uniq
+
+  puts "Selected Year: #{$selected_drop_year}"
+  puts "Selected Countries: #{$selected_drop_country}"
+
+  content_type :json
+  { drop_country: $selected_drop_country }.to_json
 end

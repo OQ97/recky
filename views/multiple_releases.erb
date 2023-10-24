@@ -6,9 +6,9 @@
 </div>
 
 <div>
-    <form action="/:catalogue_search/:detailed_search" method="get">
+    <form action="/catalogue_search/detailed_search" method="get">
     <select name="release_details">
-        <% @sorted_combinations.each do |item| %>
+        <% $sorted_combinations.each do |item| %>
             <option><%= item %></option>
         <% end %>
     </select>
@@ -17,14 +17,21 @@
 </div>
 
 <div>
-<% if @all_titles.uniq.size >1%>
-    <ul>
-        <% @title_catno.sort.uniq.each do |item| %>
-            <% result_image_hash = $results_array.find { |hash| hash["title"] == item }%>
-            <% result_image = result_image_hash ? result_image_hash["cover_image"] : nil %>
-            <li><%= item %></li>
-            <img src="<%= result_image %>" alt="Result image" height="100">
-        <% end %>
-    </ul>
-    <% end %>
-</div>
+<p><Strong>EXPERIMENTAL SECTION</Strong></p>
+
+<h1>Dynamic Dropdown Menus</h1>
+
+<%= form_tag({controller: "your", action: "process_form"}, method: "post") do %>
+  <label for="year">Select Year:</label>
+  <%= select_tag "year", options_for_select($combination_hash.map { |item| item["Year"] }.uniq) %>
+  
+  <label for="country">Select Country:</label>
+  <%= select_tag "country", options_for_select($combination_hash.map { |item| item["Country"] }.uniq) %>
+  
+  <label for="text">Select Text:</label>
+  <%= select_tag "text", options_for_select($combination_hash.map { |item| item["Text"] }.uniq) %>
+  
+  <%= submit_tag "Submit" %>
+<% end %>
+
+</div>  
